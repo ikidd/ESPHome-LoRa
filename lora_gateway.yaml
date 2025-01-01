@@ -1,0 +1,106 @@
+
+esphome:
+  name: lora_gateway
+  platform: ESP32
+  board: esp32dev
+  includes:
+    - lora_gateway.h
+  libraries:
+    - "LoRa"
+    - "SPI"
+    - "CryptoLW"
+    - "Crypto"
+    - "ArduinoJson-esphomelib"
+
+wifi:
+  ssid: "myssid"
+  password: "mywlanpswd"
+  fast_connect: on
+  
+  manual_ip:
+    static_ip: 192.168.178.XXX
+    gateway: 192.168.178.1
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Fallback Hotspot"
+    password: "pswd"
+
+captive_portal:
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  password: "apipswd"
+
+ota:
+  password: "otapswd"
+  
+# Enable SPI for LoRa
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+  
+
+sensor:
+  - platform: custom
+    lambda: |-
+      auto lora_sensor = new MyLoRaSensors();
+      App.register_component(lora_sensor);
+      return {lora_sensor->zaehler_sensor_id, 
+              lora_sensor->zaehler_sensor_stand,
+              lora_sensor->zaehler_sensor_power,
+              lora_sensor->zaehler_sensor_elaps,
+              lora_sensor->zaehler_sensor_msg,
+              lora_sensor->zaehler_sensor_rssi,
+              lora_sensor->zaehler_sensor_vbat,
+              lora_sensor->mbox_sensor_post,
+              lora_sensor->mbox_sensor_msg,
+              lora_sensor->mbox_sensor_rssi,
+              lora_sensor->mbox_sensor_vbat};
+    sensors:
+    - name: "Zählernummer"
+      accuracy_decimals: 0
+      icon: mdi:counter
+    - name: "Zählerstand"
+      unit_of_measurement: kWh
+      accuracy_decimals: 4
+      icon: mdi:counter
+    - name: "Wirkleistung"
+      unit_of_measurement: W
+      accuracy_decimals: 0
+      icon: mdi:gauge
+    - name: "Zählersender: letzte Nachricht vor"
+      unit_of_measurement: s
+      accuracy_decimals: 0
+      icon: mdi:timelapse
+    - name: "Zählersender: Nachricht #"
+      accuracy_decimals: 0
+      icon: mdi:message-processing-outline
+    - name: "Zählersender: Signalstärke"
+      unit_of_measurement: dBm
+      accuracy_decimals: 0
+      icon: mdi:signal
+    - name: "Zählersender: Batteriespannung"
+      unit_of_measurement: V
+      accuracy_decimals: 3
+      icon: mdi:battery
+    - name: "Briefkasten"
+      accuracy_decimals: 0
+      icon: mdi:email-box
+    - name: "Briefkastensender: Nachricht #"
+      accuracy_decimals: 0
+      icon: mdi:message-processing-outline
+    - name: "Briefkastensender: Signalstärke"
+      unit_of_measurement: dBm
+      accuracy_decimals: 0
+      icon: mdi:signal
+    - name: "Briefkastensender: Batteriespannung"
+      unit_of_measurement: V
+      accuracy_decimals: 3
+      icon: mdi:battery
